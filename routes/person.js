@@ -37,7 +37,7 @@ router.get("/:personID", async (req, res) => {
 
 router.patch("/:personID", async (req, res) => {
     try {
-        const person = await Person.findByIdAndUpdate(req.params.personID, { name: req.body.name });
+        const person = await Person.findByIdAndUpdate(req.params.personID, req.body);
         res.json(person);
     } catch(err) {
         console.log("Error while getting(" + req.params.personID + "): " + err);

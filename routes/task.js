@@ -39,19 +39,27 @@ router.patch("/:taskID", async (req, res) => {
     var finishArr;
     try {
         const task = await Task.findById(req.params.taskID);
-        finishArr = task.finished;
-        if(req.body.finished) finishArr.push(Date.now());
+
+        if(task.finished != null) finishArr = task.finished;
+        else finishArr = [];
+
+        if(req.body.finished == true) {
+            finishArr.push(Date.now());
+            req.body.finished = finishArr;
+        } else delete req.body.finished;
     } catch(err) {
         console.log("Error while getting(" + req.params.taskID + "): " + err);
         res.status(404).json({ message: "Entry not found" });
         return;
     }
     
+    console.log(req.body);
+
     try {
-        const task = await Task.findByIdAndUpdate(req.params.taskID, { name: req.body.name, finished: finishArr, period: req.body.period, personID: req.body.personID, roomID: req.body.roomID, comment: req.body.comment });
+        const task = await Task.findByIdAndUpdate(req.params.taskID, req.body);
         res.json(task);
     } catch(err) {
-        console.log("Error while getting(" + req.params.taskID + "): " + err);
+        console.log("Error while patching(" + req.params.taskID + "): " + err);
         res.status(404).json({ message: "Entry not found" });
     }
 });

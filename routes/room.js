@@ -37,7 +37,7 @@ router.get("/:roomID", async (req, res) => {
 
 router.patch("/:roomID", async (req, res) => {
     try {
-        const room = await Room.findByIdAndUpdate(req.params.roomID, { name: req.body.name });
+        const room = await Room.findByIdAndUpdate(req.params.roomID, req.body);
         res.json(room);
     } catch(err) {
         console.log("Error while getting(" + req.params.roomID + "): " + err);
