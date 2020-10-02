@@ -21,6 +21,16 @@ mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true, useUnifiedT
 
 app.use(bodyParser.json());
 
+app.use((res, req, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    if(req.method == "OPTIONS") {
+        res.header("Access-Control-Allow-Methods", "PUT, POST, PATCH, DELETE, GET");
+        return res.status(200).json({});
+    }
+    next();
+});
+
 const taskRoute = require("./routes/task");
 const roomRoute = require("./routes/room");
 const personRoute = require("./routes/person");
@@ -28,17 +38,3 @@ const personRoute = require("./routes/person");
 app.use("/task", taskRoute);
 app.use("/room", roomRoute);
 app.use("/person", personRoute);
-
-app.get("/", async function (getReq, getRes) {
-    let data;
-    try {
-        data = await readfile("app/dist/index.html");
-    } catch (err) {
-        getRes.writeHead(500, "HTTP error" + err,  {"Content-Type": "text/html"});
-        return;
-    }
-
-    getRes.writeHead(200, {"Content-Type": "text/html"});
-    getRes.write(data);
-    getRes.end();  
-});
