@@ -53,8 +53,6 @@ router.patch("/:taskID", async (req, res) => {
         return;
     }
     
-    console.log(req.body);
-
     try {
         const task = await Task.findByIdAndUpdate(req.params.taskID, req.body);
         res.json(task);

@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const app = express();
 const fs = require("fs");
 const util = require("util");
@@ -6,9 +7,10 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const path = require('path');
 
+app.use(cors());
+
 console.log("Server started.\n")
 console.log("Mongoose(v" + mongoose.version + ") initialized.\n");
-
 
 require("dotenv/config")
 global.serverRoot = path.resolve(__dirname);
@@ -20,16 +22,6 @@ const readfile = util.promisify(fs.readFile);
 mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false}, () => console.log("Connected to database."));
 
 app.use(bodyParser.json());
-
-app.use((res, req, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-    if(req.method == "OPTIONS") {
-        res.header("Access-Control-Allow-Methods", "PUT, POST, PATCH, DELETE, GET");
-        return res.status(200).json({});
-    }
-    next();
-});
 
 const taskRoute = require("./routes/task");
 const roomRoute = require("./routes/room");
