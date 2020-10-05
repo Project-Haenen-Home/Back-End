@@ -1,8 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
-const fs = require("fs");
-const util = require("util");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const path = require('path');
@@ -16,8 +14,6 @@ require("dotenv/config")
 global.serverRoot = path.resolve(__dirname);
 
 app.listen(2400);
-
-const readfile = util.promisify(fs.readFile);
 
 mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false}, () => console.log("Connected to database."));
 

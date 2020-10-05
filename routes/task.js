@@ -4,8 +4,11 @@ const Task = require("../models/Task");
 const router = express.Router();
 
 router.get("/", async (req, res) => {
+    console.log(req.query);
+    var tasks;
     try {
-        const tasks = await Task.find();
+        if(req.query.personID != null) tasks = await Task.find({personID: req.query.personID});
+        else tasks = await Task.find();
         res.json(tasks);
     } catch(err) {
         console.log("Error while getting: " + err);
