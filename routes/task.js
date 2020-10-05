@@ -4,10 +4,12 @@ const Task = require("../models/Task");
 const router = express.Router();
 
 router.get("/", async (req, res) => {
-    var tasks;
+    var query = new Object();
+    if(req.query.roomID != null) query.roomID = req.query.roomID;
+    if(req.query.personID != null) query.personID = { $in: req.query.personID.split('|') };
+
     try {
-        if(req.query.personID != null) tasks = await Task.find({ personID: { $in: req.query.personID.split('|') } });
-        else tasks = await Task.find();
+        const tasks = await Task.find(query);
         res.json(tasks);
     } catch(err) {
         console.log("Error while getting: " + err);
