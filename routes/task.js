@@ -4,10 +4,9 @@ const Task = require("../models/Task");
 const router = express.Router();
 
 router.get("/", async (req, res) => {
-    console.log(req.query);
     var tasks;
     try {
-        if(req.query.personID != null) tasks = await Task.find({personID: req.query.personID});
+        if(req.query.personID != null) tasks = await Task.find({ personID: { $in: req.query.personID.split('|') } });
         else tasks = await Task.find();
         res.json(tasks);
     } catch(err) {
