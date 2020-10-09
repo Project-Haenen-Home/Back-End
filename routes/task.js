@@ -9,8 +9,44 @@ router.get("/", async (req, res) => {
     if(req.query.personID != null) query.personID = { $in: req.query.personID.split('|') };
 
     try {
-        const tasks = await Task.find(query);
-        res.json(tasks);
+        var tasks = await Task.find(query);
+        var output = [];
+
+
+        for(var i = 0; i < tasks.length; i++) {
+            var smallest = { index: i, key: Number(toDeadline(tasks[i].finished[tasks[i].finished.length - 1], tasks[i].period)) };
+
+            for(var j = i + 1; j < tasks.length; j++) {
+                const curr = Number(toDeadline(tasks[j].finished[tasks[j].finished.length - 1], tasks[j].period));
+                if(curr < smallest.key) {
+                    smallest.index = j;
+                    smallest.key = curr;
+                }
+            }
+
+            var temp = tasks[i];
+            tasks[i] = tasks[smallest.index];
+            tasks[smallest.index] = temp;
+            
+            if(req.query.dayFilter == null || smallest.key <= req.query.dayFilter) output.push(tasks[i]);
+            else break;
+        }
+
+        // for(var i = 0; i < tasks.length; i++) {
+            
+        //     var key = Number(toDeadline(tasks[i].finished[tasks[i].finished.length - 1], tasks[i].period));
+        //     var task = tasks[i];
+        //     var j = i - 1;
+            
+        //     while(j >= 0 && Number(toDeadline(tasks[j].finished[tasks[j].finished.length - 1], tasks[j].period)) > key) {
+        //         tasks[j + 1] = tasks[j];
+        //         j--;
+        //     }
+
+        //     tasks[j + 1] = task;
+        // }
+
+        res.json(output);
     } catch(err) {
         console.log("Error while getting: " + err);
         res.status(500).json({ message: err });
@@ -75,5 +111,9 @@ router.delete("/:taskID", async (req, res) => {
         res.status(404).json({ message: "Entry not found" });
     }
 });
+
+function toDeadline(date, period) {
+    return (period - (new Date() - new Date(date)) / (1000 * 3600 * 24)).toFixed(0);
+}
 
 module.exports = router;
