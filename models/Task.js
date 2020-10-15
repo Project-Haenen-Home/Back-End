@@ -14,6 +14,8 @@ const TaskSchema = mongoose.Schema({
         required: true
     },
     personID: mongoose.Schema.Types.ObjectId,
+    rotate: Boolean,
+    rotateGroup: [mongoose.Schema.Types.ObjectId],
     roomID: mongoose.Schema.Types.ObjectId,
     comment: String
 });

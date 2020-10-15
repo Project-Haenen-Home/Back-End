@@ -27,25 +27,11 @@ router.get("/", async (req, res) => {
             var temp = tasks[i];
             tasks[i] = tasks[smallest.index];
             tasks[smallest.index] = temp;
-            
+
             if(req.query.dayFilter == null || smallest.key <= req.query.dayFilter) output.push(tasks[i]);
             else break;
         }
-
-        // for(var i = 0; i < tasks.length; i++) {
-            
-        //     var key = Number(toDeadline(tasks[i].finished[tasks[i].finished.length - 1], tasks[i].period));
-        //     var task = tasks[i];
-        //     var j = i - 1;
-            
-        //     while(j >= 0 && Number(toDeadline(tasks[j].finished[tasks[j].finished.length - 1], tasks[j].period)) > key) {
-        //         tasks[j + 1] = tasks[j];
-        //         j--;
-        //     }
-
-        //     tasks[j + 1] = task;
-        // }
-
+        
         res.json(output);
     } catch(err) {
         console.log("Error while getting: " + err);
@@ -54,15 +40,39 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-    const task = new Task({ name: req.body.name, finished: [Date.now()], period: req.body.period, personID: req.body.personID, roomID: req.body.roomID, comment: req.body.comment });
+    var newTask = new Object();
 
-    try {
-        const save = await task.save();
-        res.json(save);
-    } catch(err) { 
+    if(req.body.name != null && req.body.name != "" && req.body.period != null && req.body.period != "" && req.body.personID != null && req.body.personID != "" && req.body.roomID != null && req.body.roomID != "") {
+        newTask.name = req.body.name;
+        newTask.period = req.body.period;
+        newTask.personID = req.body.personID;
+        newTask.roomID = req.body.roomID;
+        newTask.finished = [Date.now()];
+
+        if(req.body.comment != null && req.body.comment != "") newTask.comment = req.body.comment;
+
+        if(req.body.rotate != null && req.body.rotate != false && req.body.rotateGroup != null && req.body.rotateGroup != []) {
+            newTask.rotate = true;
+            newTask.rotateGroup = req.body.rotateGroup;
+        } else {
+            newTask.rotate = false;
+        }
+
+        const task = new Task(newTask);
+
+        try {
+            const save = await task.save();
+            res.json(save);
+        } catch(err) { 
+            console.log("Error while saving: " + err);
+            res.status(500).json({ message: err });
+        };
+
+    } else {
+        const err = "Some required parameters are not filled in!";
         console.log("Error while saving: " + err);
         res.status(500).json({ message: err });
-     };
+    }
 });
 
 router.get("/:taskID", async (req, res) => {
@@ -84,6 +94,22 @@ router.patch("/:taskID", async (req, res) => {
         else finishArr = [];
 
         if(req.body.finished == true) {
+            if(task.rotate != null && task.rotate != false) {
+                var index = -1;
+
+                for(var i = 0; i < task.rotateGroup.length; i++) {
+                    if(task.rotateGroup[i].toString() === task.personID.toString()) {
+                        index = i;
+                        break;
+                    }
+                }
+
+                if((index + 1) >= task.rotateGroup.length) index = 0;
+                else index++;
+
+                req.body.personID = task.rotateGroup[index];
+            }
+
             finishArr.push(Date.now());
             req.body.finished = finishArr;
         } else delete req.body.finished;
