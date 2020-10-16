@@ -1,5 +1,8 @@
 const express = require("express");
-const Task = require("../models/Task");
+const Task = require("../../models/Task");
+
+const schedule = require('node-schedule');
+const axios = require('axios');
 
 const router = express.Router();
 
@@ -143,3 +146,26 @@ function toDeadline(date, period) {
 }
 
 module.exports = router;
+
+schedule.scheduleJob("0 10 * * *", function() {
+    // try {
+    //     var tasks = await Task.find(query);
+
+    //     tasks.forEach(task => {
+    //         const deadline = Number(toDeadline(task.finished[task.finished.length - 1], task.period));
+
+
+    //     });
+    // } catch (err) {
+
+    // }
+    axios.post("https://maker.ifttt.com/trigger/TaakVerlopen/with/key/dMlDGOLpUJFmth3FvFaSkA", {
+        value1: "NodeJS taak"
+    })
+    .then(resp => {
+        console.log("Taak verstuurd");
+    })
+    .catch(err => {
+        console.log(err);
+    })
+});
