@@ -19,10 +19,15 @@ mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true, useUnifiedT
 
 app.use(bodyParser.json());
 
+const personRoute = require("./routes/person");
+app.use("/person", personRoute);
+
 const taskRoute = require("./routes/Taken/task");
 const roomRoute = require("./routes/Taken/room");
-const personRoute = require("./routes/person");
-
 app.use("/task", taskRoute);
 app.use("/room", roomRoute);
-app.use("/person", personRoute);
+
+const categoryRoute = require("./routes/Kast/category");
+const productRoute = require("./routes/Kast/product");
+app.use("/category", categoryRoute);
+app.use("/product", productRoute);
