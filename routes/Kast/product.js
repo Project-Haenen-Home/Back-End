@@ -4,8 +4,11 @@ const Product = require("../../models/Product");
 const router = express.Router();
 
 router.get("/", async (req, res) => {
+    var query = new Object();
+    if(req.query.categoryID != null) query.categoryID = req.query.categoryID;
+
     try {
-        var products = await Product.find();
+        var products = await Product.find(query);
         
         res.json(products);
     } catch(err) {
@@ -17,11 +20,13 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
     var newProduct = new Object();
 
-    if(req.body.name != null && req.body.name != "") {
+    if(req.body.name != null && req.body.name != "" && req.body.categoryID != null && req.body.categoryID != "") {
         newProduct.name = req.body.name;
+        newProduct.categoryID = req.body.categoryID;
         if(req.body.deadline != null && req.body.deadline != "") newProduct.deadline = req.body.deadline;
-        if(req.body.categoryID != null && req.body.categoryID != "")  { 
-            newProduct.categoryID = req.body.categoryID;
+
+        if(req.body.amount != null && req.body.amount != "")  { 
+            newProduct.amount = req.body.amount;
             if(req.body.unit != null && req.body.unit != "") newProduct.unit = req.body.unit;
         }
         if(req.body.comment != null && req.body.comment != "") newProduct.comment = req.body.comment;
