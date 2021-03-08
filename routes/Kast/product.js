@@ -20,13 +20,14 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
     var newProduct = new Object();
 
-    if(req.body.name != null && req.body.name != "" && req.body.categoryID != null && req.body.categoryID != "") {
+    if(req.body.name != null && req.body.name != "" && req.body.categoryID != null && req.body.categoryID != "" && req.body.amount != null) {
         newProduct.name = req.body.name;
         newProduct.categoryID = req.body.categoryID;
+        newProduct.amount = req.body.amount;
         if(req.body.deadline != null && req.body.deadline != "") newProduct.deadline = req.body.deadline;
 
-        if(req.body.amount != null && req.body.amount != "")  { 
-            newProduct.amount = req.body.amount;
+        if(req.body.weight != null && req.body.weight != "")  { 
+            newProduct.weight = req.body.weight;
             if(req.body.unit != null && req.body.unit != "") newProduct.unit = req.body.unit;
         }
         if(req.body.comment != null && req.body.comment != "") newProduct.comment = req.body.comment;
@@ -59,6 +60,7 @@ router.get("/:productID", async (req, res) => {
 });
 
 router.patch("/:productID", async (req, res) => {   
+    console.log(req.body);
     try {
         const product = await Product.findByIdAndUpdate(req.params.productID, req.body);
         res.json(product);

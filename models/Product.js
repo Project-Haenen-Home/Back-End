@@ -5,9 +5,17 @@ const ProductSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    amount: {
+        type: Number,
+        required: true
+    },
+    categoryID: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
     deadline: Date,
-    categoryID: mongoose.Schema.Types.ObjectId,
-    amount: Number,
+    
+    weight: Number,
     unit: String,
     comment: String
 });

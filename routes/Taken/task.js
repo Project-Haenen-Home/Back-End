@@ -1,8 +1,10 @@
 const express = require("express");
 const Task = require("../../models/Task");
+const Person = require("../../models/Person");
+const Room = require("../../models/Room");
 
 const schedule = require('node-schedule');
-const axios = require('axios');
+const nodemailer = require('nodemailer');
 
 const router = express.Router();
 
@@ -147,25 +149,89 @@ function toDeadline(date, period) {
 
 module.exports = router;
 
-schedule.scheduleJob("0 10 * * *", function() {
-    // try {
-    //     var tasks = await Task.find(query);
+schedule.scheduleJob("0 10 * * *", async function() {
+    let trans = nodemailer.createTransport({
+       host: "send.one.com" ,
+       port: 465,
+       secure: true,
+       auth: {
+           user: "taken@haenenweb.nl",
+           pass: process.env.EMAIL_PASS
+       }
+    });
 
-    //     tasks.forEach(task => {
-    //         const deadline = Number(toDeadline(task.finished[task.finished.length - 1], task.period));
+    var list = [];
+    const people = await Person.find();
+    for(var i = 0; i < people.length; i++) {
+        if(people[i].email != null && people[i].email != "") {
+            list.push({id: people[i]._id, name: people[i].name, email: people[i].email, amount: 0, rooms: []});
+        }
+    }
 
+    console.log("?")
 
-    //     });
-    // } catch (err) {
+    const tasks = await Task.find();
+    for(var i = 0; i < tasks.length; i++) {
+        const deadline = Number(toDeadline(tasks[i].finished[tasks[i].finished.length - 1], tasks[i].period));
+        if(deadline <= 0) {
+            for(var j = 0; j < list.length; j++) {
+                if(list[j].id.toString() == tasks[i].personID.toString()) {
+                    var found = false;
+                    for(var k = 0; k < list[j].rooms.length; k++) {
+                        if(list[j].rooms[k].id.toString() == tasks[i].roomID.toString()) {
+                            found = true;
+                            list[j].rooms[k].tasks.push({name: tasks[i].name, deadline: -deadline});
+                            break;
+                        }
+                    }
+                    if(!found) {
+                        const room = await Room.findById(tasks[i].roomID);
+                        list[j].rooms.push({id: tasks[i].roomID, name: room.name, tasks: [{name: tasks[i].name, deadline: -deadline}]});
+                    }
+                    list[j].amount++;
+                }
+            }
+        }
+    }
 
-    // }
-    axios.post("https://maker.ifttt.com/trigger/TaakVerlopen/with/key/dMlDGOLpUJFmth3FvFaSkA", {
-        value1: "NodeJS taak"
-    })
-    .then(resp => {
-        console.log("Taak verstuurd");
-    })
-    .catch(err => {
-        console.log(err);
-    })
+    console.log(list[2].rooms);
+
+    for(var i = 0; i < list.length; i++) {
+        if(list[i].amount != 0) {
+            var subject = list[i].amount + " verlopen ";
+            if(list[i].amount == 1) subject += "taak!";
+            else subject += "taken!";
+
+            var html = "<p>Hallo " + list[i].name + " ,</p>";
+            html += "<p>U heeft een aantal verlopen taken.</p>";
+            for(var j = 0; j < list[i].rooms.length; j++) {
+                html += "<b>" + list[i].rooms[j].name + "</b>"
+                html += "<ul>";
+                for(var k = 0; k < list[i].rooms[j].tasks.length; k++) {
+                    html += "<li>" + list[i].rooms[j].tasks[k].name + " (";
+                    if(list[i].rooms[j].tasks[k].deadline == 0) {
+                        html += "vandaag";
+                    } else if(list[i].rooms[j].tasks[k].deadline == 1) {
+                        html += "1 dag geleden";
+                    } else {
+                        html += list[i].rooms[j].tasks[k].deadline + " dagen geleden";
+                    }
+
+                    html += ")</li>";
+                }
+                html += "</ul>";
+            }
+
+            html += "<p>Met vriendelijke groet,</p><p>Taken @ HaenenHome</p>";
+
+            console.log(html);
+
+            await trans.sendMail({
+                from: '"Taken @ HaenenHome" <taken@haenenweb.nl>',
+                to: list[i].email,
+                subject: subject,
+                html: html
+            });
+        }
+    }
 });

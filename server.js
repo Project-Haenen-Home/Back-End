@@ -18,6 +18,10 @@ app.listen(2400);
 mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false}, () => console.log("Connected to database."));
 
 app.use(bodyParser.json());
+app.use(function (req, res, next) {
+    res.set('Cache-control', 'no-store');
+    next();
+})
 
 const personRoute = require("./routes/person");
 app.use("/person", personRoute);
