@@ -71,17 +71,23 @@ class TaskController implements IControllerBase {
 	patchTask = async (req: Request, res: Response) => {
 		const id = Number(req.params.taskID);
 		if (!Number.isNaN(id)) {
-			try {
-				const { rowCount } = await pool.query(
-					`UPDATE "Tasks" SET "name" = 'test5' WHERE "id"=${id}`
-				);
+			const result = taskSchema.partial().safeParse(req.body);
 
-				if (rowCount > 0) res.status(204).json();
-				else res.status(400).json({ error: "ID does not exist" });
-			} catch (err) {
-				console.log(err);
-				res.status(500).json(err);
-			}
+			if (result.success) {
+				try {
+					const { rowCount } = await pool.query(
+						`UPDATE "Tasks" SET ${sql.equalKeyValues(
+							result.data
+						)} WHERE "id"=${id}`
+					);
+
+					if (rowCount > 0) res.status(204).json();
+					else res.status(400).json({ error: "ID does not exist" });
+				} catch (err) {
+					console.log(err);
+					res.status(500).json(err);
+				}
+			} else res.status(400).json(result.error);
 		} else res.status(400).json({ error: "ID field must be a number" });
 	};
 

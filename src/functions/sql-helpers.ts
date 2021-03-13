@@ -10,4 +10,14 @@ export function splitKeyValues(obj: any): { keys: string; values: string } {
 	return { keys: keys, values: valuesArr.join(", ") };
 }
 
-export function equalKeyValues(obj: any) {}
+export function equalKeyValues(obj: any): string {
+	let output: string[] = [];
+
+	for (const key in obj) {
+		let value = obj[key];
+		if (typeof value == "string") value = `'${value}'`;
+		output.push(`"${key}" = ${value}`);
+	}
+
+	return output.join(", ");
+}
