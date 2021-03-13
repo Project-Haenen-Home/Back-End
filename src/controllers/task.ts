@@ -18,6 +18,7 @@ class TaskController implements IControllerBase {
 		this.router.post("/", this.addTask);
 		this.router.get("/:taskID", this.getTask);
 		this.router.patch("/:taskID", this.patchTask);
+		this.router.delete("/:taskID", this.deleteTask);
 		this.router.post("/:taskID/finished", this.finishTask);
 	}
 
@@ -55,11 +56,11 @@ class TaskController implements IControllerBase {
 		var id = Number(req.params.taskID);
 		if (!Number.isNaN(id)) {
 			try {
-				const { rows } = await pool.query(
+				const { rows, rowCount } = await pool.query(
 					`SELECT * FROM "AllTasks" WHERE "id"=${id}`
 				);
 
-				if (rows.length > 0) res.json(rows[0]);
+				if (rowCount > 0) res.json(rows[0]);
 				else res.status(404).json({ error: "Task does not exist!" });
 			} catch (err) {
 				console.log(err);
@@ -88,6 +89,23 @@ class TaskController implements IControllerBase {
 					res.status(500).json(err);
 				}
 			} else res.status(400).json(result.error);
+		} else res.status(400).json({ error: "ID field must be a number" });
+	};
+
+	deleteTask = async (req: Request, res: Response) => {
+		var id = Number(req.params.taskID);
+		if (!Number.isNaN(id)) {
+			try {
+				const { rowCount } = await pool.query(
+					`DELETE FROM "Tasks" WHERE "id"=${id}`
+				);
+
+				if (rowCount > 0) res.status(204).json();
+				else res.status(404).json({ error: "Task does not exist!" });
+			} catch (err) {
+				console.log(err);
+				res.status(500).json();
+			}
 		} else res.status(400).json({ error: "ID field must be a number" });
 	};
 
