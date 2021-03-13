@@ -75,19 +75,21 @@ class TaskController implements IControllerBase {
 			const result = taskSchema.partial().safeParse(req.body);
 
 			if (result.success) {
-				try {
-					const { rowCount } = await pool.query(
-						`UPDATE "Tasks" SET ${sql.equalKeyValues(
-							result.data
-						)} WHERE "id"=${id}`
-					);
+				if (Object.entries(result.data).length > 0) {
+					try {
+						const { rowCount } = await pool.query(
+							`UPDATE "Tasks" SET ${sql.equalKeyValues(
+								result.data
+							)} WHERE "id"=${id}`
+						);
 
-					if (rowCount > 0) res.status(204).json();
-					else res.status(400).json({ error: "ID does not exist" });
-				} catch (err) {
-					console.log(err);
-					res.status(500).json(err);
-				}
+						if (rowCount > 0) res.status(204).json();
+						else res.status(400).json({ error: "ID does not exist" });
+					} catch (err) {
+						console.log(err);
+						res.status(500).json(err);
+					}
+				} else res.status(400).json({ error: "Request body is empty" });
 			} else res.status(400).json(result.error);
 		} else res.status(400).json({ error: "ID field must be a number" });
 	};
