@@ -4,6 +4,7 @@ import { pool } from "../db";
 import * as sql from "../functions/sql-helpers";
 import IControllerBase from "interfaces/IControllerBase";
 import { taskSchema } from "../models/Task";
+import { querySchema, remapQuery } from "../models/Query";
 
 class TaskController implements IControllerBase {
 	public path = "/tasks";
@@ -14,8 +15,11 @@ class TaskController implements IControllerBase {
 	}
 
 	public initRoutes() {
+		//Static routes
 		this.router.get("/", this.getAllTasks);
 		this.router.post("/", this.addTask);
+
+		//Dynamic routes
 		this.router.get("/:taskID", this.getTask);
 		this.router.patch("/:taskID", this.patchTask);
 		this.router.delete("/:taskID", this.deleteTask);
@@ -23,16 +27,23 @@ class TaskController implements IControllerBase {
 	}
 
 	getAllTasks = async (req: Request, res: Response) => {
-		try {
-			const { rows } = await pool.query(
-				'SELECT * FROM "AllTasks" ORDER BY "due" ASC nulls FIRST'
-			);
+		const params = querySchema.safeParse(remapQuery(req.query));
 
-			res.json(rows);
-		} catch (err) {
-			console.log(err);
-			res.status(500).json();
-		}
+		if (params.success) {
+			try {
+				let query = 'SELECT * FROM "AllTasks" ORDER BY "due" ASC nulls FIRST';
+
+				if (params.data.limit != undefined)
+					query += ` LIMIT ${params.data.limit}`;
+
+				const { rows } = await pool.query(query);
+
+				res.json(rows);
+			} catch (err) {
+				console.log(err);
+				res.status(500).json();
+			}
+		} else res.status(400).json(params.error);
 	};
 
 	addTask = async (req: Request, res: Response) => {
