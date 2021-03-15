@@ -7,6 +7,7 @@ class App {
 
 	constructor(appConfig: { port: number; middlewares: any; controllers: any }) {
 		this.app = express();
+		this.app.disable("x-powered-by");
 		this.port = appConfig.port;
 
 		this.middlewares(appConfig.middlewares);

@@ -16,6 +16,8 @@ class RoomController implements IControllerBase {
 	public initRoutes() {
 		this.router.get("/", this.getAllRooms);
 		this.router.post("/", this.addRoom);
+		this.router.get("/taskStats", this.getTaskStats);
+
 		this.router.get("/:roomID", this.getRoom);
 		this.router.patch("/:roomID", this.patchRoom);
 		// this.router.delete("/:roomID", this.deleteRoom); TODO
@@ -108,6 +110,20 @@ class RoomController implements IControllerBase {
 	// 		}
 	// 	} else res.status(400).json({ error: "ID field must be a number" });
 	// };
+
+	getTaskStats = async (req: Request, res: Response) => {
+		try {
+			let query = 'SELECT * FROM "RoomTaskStats"';
+
+			const { rows } = await pool.query(query);
+			console.log(rows);
+
+			res.json(rows);
+		} catch (err) {
+			console.log(err);
+			res.status(500).json();
+		}
+	}
 }
 
 export default RoomController;
