@@ -31,10 +31,15 @@ class TaskController implements IControllerBase {
 
 		if (params.success) {
 			try {
-				let query = 'SELECT * FROM "AllTasks" ORDER BY "due" ASC nulls FIRST';
+				let query = 'SELECT * FROM "AllTasks"';
+
+				if (params.data.roomID != undefined)
+					query += ` WHERE "roomID" = ${params.data.roomID}`;
 
 				if (params.data.limit != undefined)
 					query += ` LIMIT ${params.data.limit}`;
+
+				query += ' ORDER BY "due" ASC nulls FIRST';
 
 				const { rows } = await pool.query(query);
 
@@ -95,7 +100,10 @@ class TaskController implements IControllerBase {
 						);
 
 						if (rowCount > 0) res.status(204).json();
-						else res.status(400).json({ error: "ID does not exist" });
+						else
+							res.status(400).json({
+								error: "ID does not exist",
+							});
 					} catch (err) {
 						console.log(err);
 						res.status(500).json(err);

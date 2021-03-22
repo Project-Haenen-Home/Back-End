@@ -83,7 +83,10 @@ class RoomController implements IControllerBase {
 						);
 
 						if (rowCount > 0) res.status(204).json();
-						else res.status(400).json({ error: "ID does not exist" });
+						else
+							res.status(400).json({
+								error: "ID does not exist",
+							});
 					} catch (err) {
 						console.log(err);
 						res.status(500).json(err);
@@ -116,14 +119,13 @@ class RoomController implements IControllerBase {
 			let query = 'SELECT * FROM "RoomTaskStats"';
 
 			const { rows } = await pool.query(query);
-			console.log(rows);
 
 			res.json(rows);
 		} catch (err) {
 			console.log(err);
 			res.status(500).json();
 		}
-	}
+	};
 }
 
 export default RoomController;

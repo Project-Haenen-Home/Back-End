@@ -2,6 +2,7 @@ import * as z from "zod";
 
 export const querySchema = z.object({
 	limit: z.bigint().optional(),
+	roomID: z.bigint().optional(),
 });
 
 export function remapQuery(obj: any): Object {
